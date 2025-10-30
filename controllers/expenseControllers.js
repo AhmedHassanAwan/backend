@@ -1,0 +1,76 @@
+import Expense from '../models/Expense.js';
+import xlsx from 'xlsx';
+
+const addExpense = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const {icon, amount, category, date} = req.body;
+        if(!amount || !category || !date || !icon){
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        const newExpense = new Expense({
+            userId,
+            icon,
+            amount,
+            category,
+            date
+        });
+        await newExpense.save();
+        res.status(201).json(newExpense);
+    } catch (error) {
+        console.error("Error adding Expense:", error);
+    res.status(500).json({ message: "Error adding Expense" });
+    }
+};
+
+
+const getAllExpenses = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const Expenses = await Expense.find({ userId }).sort({ date: -1 });
+        res.status(200).json(Expenses);
+    } catch (error) {
+        console.error("Error fetching Expenses:", error);
+        res.status(500).json({ message: "Error fetching Expenses" });
+    }
+};
+
+
+const deleteExpense = async (req, res) => {
+    try {
+        await Expense.findByIdAndDelete(req.params.id);
+        res.json({ message: "Expense deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting Expense:", error);
+        res.status(500).json({ message: "Error deleting Expense" });
+    }
+};
+
+
+const downloadExpenseExcel = async (req, res) => {
+    const userId = req.user.id
+
+    try {
+        const expenses = await Expense.find({ userId }).sort({ date: -1 });
+
+        const data = expenses.map(item => ({
+            Icon: item.icon,
+            Amount: item.amount,
+            Category: item.category,
+            Date: item.date,
+        }));
+
+      
+        const workbook = xlsx.utils.book_new();
+        const worksheet = xlsx.utils.json_to_sheet(data);
+        xlsx.utils.book_append_sheet(workbook, worksheet, "Expenses");
+        xlsx.writeFile(workbook, "expenses.xlsx");
+        res.download("expenses.xlsx");
+    } catch (error) {
+        console.error("Error downloading expenses Excel:", error);
+        res.status(500).json({ message: "Error downloading expenses Excel" });
+    }
+};
+export { addExpense, getAllExpenses, deleteExpense, downloadExpenseExcel };
