@@ -1,20 +1,29 @@
 
 import Income from '../models/Income.js';
 import xlsx from 'xlsx';
+
 const addIncome = async (req, res) => {
     const userId = req.user.id;
 
     try {
-        const {icon, amount, source, date} = req.body;
-        if(!amount || !source || !date || !icon){
+        const { icon, amount, source, date } = req.body;
+
+        if (!amount || !source || !date || !icon) {
             return res.status(400).json({ message: "All fields are required" });
         }
-        const newIncome = new Income({ userId, icon, amount, source, date});
+        const newIncome = new Income({ userId, icon, amount, source, date });
         await newIncome.save();
         res.status(201).json(newIncome);
+
+
+        if (amount <= 0) {
+            return res.status(400).json({ message: "Amount must be greater than 0" });
+        }
+
+
     } catch (error) {
         console.error("Error adding income:", error);
-    res.status(500).json({ message: "Error adding income" });
+        res.status(500).json({ message: "Error adding income" });
     }
 };
 
@@ -23,7 +32,7 @@ const getAllIncomes = async (req, res) => {
     const userId = req.user.id;
 
     try {
-        const incomes = await Income.find({ userId }).sort({ date: -1 });
+        const incomes = await Income.find({ userId }).sort({ date: -1 });  // Descending taky new data sab say top may rahy 
         res.status(200).json(incomes);
     } catch (error) {
         console.error("Error fetching incomes:", error);
@@ -45,7 +54,6 @@ const deleteIncome = async (req, res) => {
 
 const downloadIncomeExcel = async (req, res) => {
     const userId = req.user.id
-
     try {
         const income = await Income.find({ userId }).sort({ date: -1 });
 
@@ -55,13 +63,13 @@ const downloadIncomeExcel = async (req, res) => {
             Source: item.source,
             Date: item.date,
         }));
-
-     
         const workbook = xlsx.utils.book_new();
         const worksheet = xlsx.utils.json_to_sheet(data);
         xlsx.utils.book_append_sheet(workbook, worksheet, "Incomes");
         xlsx.writeFile(workbook, "incomes.xlsx");
+
         res.download("incomes.xlsx");
+        
     } catch (error) {
         console.error("Error downloading income Excel:", error);
         res.status(500).json({ message: "Error downloading income Excel" });

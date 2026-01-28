@@ -17,21 +17,21 @@ const generateToken = (user) => {
 }
 
 const registerUser = async (req, res) => {
-  const {fullName, email, password, profileImageUrl} = req.body;
+  const { fullName, email, password, profileImageUrl } = req.body;
 
 
-  if(!fullName || !email || !password){
-    return res.status(400).json({message: "Please fill all required fields"});
+  if (!fullName || !email || !password) {
+    return res.status(400).json({ message: "Please fill all required fields" });
   }
 
   try {
- 
-    const existingUser = await User.findOne({email});
-    if(existingUser){
-      return res.status(400).json({message: "User already exists"});
-    } 
 
-    const user = await User.create({ fullName, email, password, profileImageUrl});
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const user = await User.create({ fullName, email, password, profileImageUrl });
     res.status(201).json({
       message: "User registered successfully",
       id: user._id,
@@ -86,9 +86,9 @@ const getUserInfo = async (req, res) => {
       user
     });
   } catch (error) {
-      console.error("Error registering user:", error);
+    console.error("Error registering user:", error);
     res.status(500).json({ message: "Error registering user" });
   }
 };
 
-export {registerUser, loginUser, getUserInfo};
+export { registerUser, loginUser, getUserInfo };

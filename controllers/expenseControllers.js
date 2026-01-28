@@ -5,10 +5,12 @@ const addExpense = async (req, res) => {
     const userId = req.user.id;
 
     try {
-        const {icon, amount, category, date} = req.body;
-        if(!amount || !category || !date || !icon){
+        const { icon, amount, category, date } = req.body;
+        if (!amount || !category || !date || !icon) {
             return res.status(400).json({ message: "All fields are required" });
         }
+
+
         const newExpense = new Expense({
             userId,
             icon,
@@ -20,7 +22,7 @@ const addExpense = async (req, res) => {
         res.status(201).json(newExpense);
     } catch (error) {
         console.error("Error adding Expense:", error);
-    res.status(500).json({ message: "Error adding Expense" });
+        res.status(500).json({ message: "Error adding Expense" });
     }
 };
 
@@ -62,7 +64,7 @@ const downloadExpenseExcel = async (req, res) => {
             Date: item.date,
         }));
 
-      
+
         const workbook = xlsx.utils.book_new();
         const worksheet = xlsx.utils.json_to_sheet(data);
         xlsx.utils.book_append_sheet(workbook, worksheet, "Expenses");
